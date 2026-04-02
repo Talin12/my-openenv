@@ -1,3 +1,13 @@
+---
+title: OpenEnv Traffic Control
+emoji: 🚦
+colorFrom: blue
+colorTo: green
+sdk: gradio
+app_file: app.py
+pinned: false
+---
+
 # Smart City Traffic Control - RL Environment
 
 This repository contains a simple, functional reinforcement learning (RL) environment designed for the OpenEnv × MetAI hackathon. It simulates a 4-way traffic intersection to test congestion-reduction strategies.
