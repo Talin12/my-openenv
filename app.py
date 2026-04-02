@@ -10,13 +10,13 @@ def format_state(state):
     return f"🚦 Green Light: {light_str}\n\n🚗 Cars Waiting:\n- North: {n}\n- South: {s}\n- East: {e}\n- West: {w}"
 
 def reset_simulation():
-    state = env.reset()
+    state, info = env.reset()
     return format_state(state), "Environment Reset", 0
 
 def step_simulation(action_type):
     action = 0 if action_type == "Keep Light" else 1
-    state, reward = env.step(action)
-    
+    state, reward, terminated, truncated, info = env.step(action)
+
     action_log = f"Agent Action Taken: {action_type} (Action {action})"
     return format_state(state), action_log, reward
 
@@ -24,13 +24,13 @@ def step_simulation(action_type):
 with gr.Blocks(title="Smart City Traffic RL Environment") as demo:
     gr.Markdown("# 🚦 Traffic Control RL Environment")
     gr.Markdown("A real-world simulation environment for the OpenEnv × MetAI hackathon. Act as the AI agent below to control the intersection.")
-    
+
     with gr.Row():
         with gr.Column():
             state_display = gr.Textbox(label="Current Environment State", lines=6, interactive=False)
             action_log = gr.Textbox(label="Event Log", interactive=False)
             reward_display = gr.Number(label="Last Step Reward (Congestion Penalty)", interactive=False)
-        
+
         with gr.Column():
             gr.Markdown("### Agent Controls")
             btn_keep = gr.Button("Step: Keep Light (Action 0)", variant="primary")
