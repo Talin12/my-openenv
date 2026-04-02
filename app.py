@@ -1,8 +1,45 @@
 import gradio as gr
+from fastapi import FastAPI
+from pydantic import BaseModel
 from env import TrafficEnv
 
+# Initialize FastAPI and environment
+app = FastAPI()
 env = TrafficEnv()
 episode_over = False
+
+
+# --- Pydantic Models ---
+
+class ActionRequest(BaseModel):
+    action: int
+
+
+# --- REST API Endpoints ---
+
+@app.post("/reset")
+def api_reset():
+    global episode_over
+    episode_over = False
+    obs, info = env.reset()
+    return {"observation": obs.tolist(), "info": info}
+
+
+@app.post("/step")
+def api_step(req: ActionRequest):
+    global episode_over
+    obs, reward, terminated, truncated, info = env.step(req.action)
+    episode_over = terminated or truncated
+    return {
+        "observation": obs.tolist(),
+        "reward": float(reward),
+        "terminated": terminated,
+        "truncated": truncated,
+        "info": info,
+    }
+
+
+# --- Gradio UI ---
 
 def format_state(state):
     n, s, e, w, light = state
@@ -59,5 +96,6 @@ with gr.Blocks(title="Smart City Traffic RL Environment") as demo:
     btn_reset.click(fn=reset_simulation, outputs=[state_display, action_log, reward_display, status_display])
     demo.load(fn=reset_simulation, outputs=[state_display, action_log, reward_display, status_display])
 
-if __name__ == "__main__":
-    demo.launch()
+
+# --- Mount Gradio onto FastAPI ---
+app = gr.mount_gradio_app(app, demo, path="/")
