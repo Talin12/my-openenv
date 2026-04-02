@@ -99,3 +99,8 @@ with gr.Blocks(title="Smart City Traffic RL Environment") as demo:
 
 # --- Mount Gradio onto FastAPI ---
 app = gr.mount_gradio_app(app, demo, path="/")
+
+# --- OpenEnv Server Entry Point ---
+def start_server():
+    import uvicorn
+    uvicorn.run("app:app", host="0.0.0.0", port=7860)
