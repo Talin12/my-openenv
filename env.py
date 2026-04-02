@@ -7,15 +7,11 @@ class TrafficEnv(gym.Env):
     def __init__(self):
         super().__init__()
 
-        # State: [cars_N, cars_S, cars_E, cars_W, light_state]
-        # light_state: 0 = N-S green, 1 = E-W green
+        self.max_steps = 100
+        self.current_step = 0
 
-        # Action space: 0 = Keep light, 1 = Switch light
         self.action_space = spaces.Discrete(2)
 
-        # Observation space:
-        # - cars_N, cars_S, cars_E, cars_W: each in range [0, 20]
-        # - light_state: 0 or 1
         self.observation_space = spaces.Box(
             low=np.array([0, 0, 0, 0, 0], dtype=np.int32),
             high=np.array([20, 20, 20, 20, 1], dtype=np.int32),
@@ -27,15 +23,17 @@ class TrafficEnv(gym.Env):
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
 
-        # Randomly initialize cars on each road (0 to 10)
+        self.current_step = 0
+
         cars = np.random.randint(0, 11, size=4)
-        light_state = 0  # Default to N-S green
+        light_state = 0
         self.state = np.array([*cars, light_state], dtype=np.int32)
 
         return self._get_obs(), {}
 
     def step(self, action):
-        # Action: 0 = Keep light, 1 = Switch light
+        self.current_step += 1
+
         cars_n, cars_s, cars_e, cars_w, light = self.state
 
         # 1. Apply Action
@@ -51,24 +49,27 @@ class TrafficEnv(gym.Env):
             cars_e = max(0, cars_e - cars_to_pass)
             cars_w = max(0, cars_w - cars_to_pass)
 
-        # 3. Add Incoming Traffic (0 to 2 new cars arrive at each lane per step)
+        # 3. Add Incoming Traffic and clip to observation space bounds
         cars_n += np.random.randint(0, 3)
         cars_s += np.random.randint(0, 3)
         cars_e += np.random.randint(0, 3)
         cars_w += np.random.randint(0, 3)
 
+        cars_n, cars_s, cars_e, cars_w = np.clip(
+            [cars_n, cars_s, cars_e, cars_w], 0, 20
+        )
+
         self.state = np.array([cars_n, cars_s, cars_e, cars_w, light], dtype=np.int32)
 
-        # 4. Calculate Reward (Negative sum of waiting cars = penalty for congestion)
-        reward = -(int(cars_n) + int(cars_s) + int(cars_e) + int(cars_w))
+        # 4. Calculate Reward
+        total_cars = int(cars_n) + int(cars_s) + int(cars_e) + int(cars_w)
+        reward = -total_cars
 
-        # terminated and truncated are False for now (no episode end condition yet)
-        terminated = False
-        truncated = False
-        info = {}
+        # 5. Episode Boundaries
+        terminated = total_cars >= 40  # Gridlock threshold
+        truncated = self.current_step >= self.max_steps
 
-        return self._get_obs(), reward, terminated, truncated, info
+        return self._get_obs(), reward, terminated, truncated, {}
 
     def _get_obs(self):
-        # Return a copy to prevent accidental state mutation outside the class
         return self.state.copy()
