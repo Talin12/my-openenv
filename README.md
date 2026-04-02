@@ -11,7 +11,7 @@ This repository contains a simple, functional reinforcement learning (RL) enviro
 - **Action Space**: `Discrete(2)`.
   - `0`: Keep current light state.
   - `1`: Switch light state.
-- **Reward Function**: The agent receives a penalty (negative reward) equal to the total number of waiting cars at the intersection. The objective is to maximize the reward by minimizing overall congestion.
+- **Reward Function**: The agent receives a penalty (negative reward) equal to the total number of waiting cars at the intersection. The objective is to maximise the reward by minimising overall congestion.
 - **Dynamics**: During a `step()`, a green light allows up to 3 cars to pass. Simultaneously, 0–2 new cars arrive at each of the 4 queues randomly. Car counts are clipped to a maximum of 20 per lane.
 
 ## Episode Boundaries
@@ -21,25 +21,29 @@ This repository contains a simple, functional reinforcement learning (RL) enviro
 
 ## Rendering
 
-The environment supports `render_mode="ansi"`, which returns a formatted string of the intersection state. Pass it at instantiation:
+The environment supports `render_mode="ansi"`, which returns a formatted ASCII string of the intersection state. Pass it at instantiation:
 ```python
 env = TrafficEnv(render_mode="ansi")
+obs, info = env.reset()
 print(env.render())
 ```
 
-## Running a Random Agent
+## Running the Test Agents
 
-To verify the environment is ready for RL training, run the included `test_agent.py` script. It instantiates the environment and runs one full episode using random actions:
+`test_agent.py` validates the environment mechanics by running two back-to-back episodes and comparing their performance:
+
+- **Episode 1 — Random Agent**: Selects actions uniformly at random via `env.action_space.sample()`.
+- **Episode 2 — Heuristic Agent**: A greedy baseline that switches the light whenever the currently-red direction has more waiting cars than the green direction. This should consistently outperform the random agent, confirming that the reward function and dynamics correctly incentivise sensible traffic management.
 ```bash
 python test_agent.py
 ```
 
-This will print the intersection state, action taken, and reward at each step, followed by an episode summary when the episode ends via termination or truncation.
+The script prints the intersection state and reward at every step, then concludes with a side-by-side summary of total reward and episode length for both agents.
 
 ## Files Overview
 - `env.py`: The core `gymnasium`-compliant environment containing `TrafficEnv`, `reset()`, `step()`, and `render()`.
 - `app.py`: A Gradio web interface to interactively simulate and test the environment logic.
-- `test_agent.py`: A demonstration script that runs a random agent for one full episode.
+- `test_agent.py`: Compares a Random Agent against a Baseline Heuristic Agent to validate environment mechanics.
 - `requirements.txt`: Python dependencies.
 
 ## How to Run Locally
