@@ -4,9 +4,12 @@ from gymnasium import spaces
 
 
 class TrafficEnv(gym.Env):
-    def __init__(self):
+    metadata = {"render_modes": ["ansi"]}
+
+    def __init__(self, render_mode=None):
         super().__init__()
 
+        self.render_mode = render_mode
         self.max_steps = 100
         self.current_step = 0
 
@@ -66,10 +69,29 @@ class TrafficEnv(gym.Env):
         reward = -total_cars
 
         # 5. Episode Boundaries
-        terminated = total_cars >= 40  # Gridlock threshold
+        terminated = total_cars >= 40
         truncated = self.current_step >= self.max_steps
 
         return self._get_obs(), reward, terminated, truncated, {}
+
+    def render(self):
+        if self.render_mode != "ansi":
+            return
+
+        cars_n, cars_s, cars_e, cars_w, light = self.state
+        light_str = "N-S Green 🟢" if light == 0 else "E-W Green 🟢"
+        total = int(cars_n) + int(cars_s) + int(cars_e) + int(cars_w)
+
+        return (
+            f"┌─── Step {self.current_step:>3} ──────────────────┐\n"
+            f"│  🚦 Light: {light_str:<22}│\n"
+            f"│                                   │\n"
+            f"│  🚗 North: {cars_n:>2}   South: {cars_s:>2}          │\n"
+            f"│  🚗 East:  {cars_e:>2}   West:  {cars_w:>2}          │\n"
+            f"│                                   │\n"
+            f"│  Total Waiting: {total:>2}                │\n"
+            f"└───────────────────────────────────┘"
+        )
 
     def _get_obs(self):
         return self.state.copy()

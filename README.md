@@ -19,9 +19,27 @@ This repository contains a simple, functional reinforcement learning (RL) enviro
 - **Truncation**: The episode ends after **100 steps** (`truncated = True`).
 - **Termination**: The episode ends early if total waiting cars across all lanes reaches **40 or more**, representing a critical gridlock condition (`terminated = True`).
 
+## Rendering
+
+The environment supports `render_mode="ansi"`, which returns a formatted string of the intersection state. Pass it at instantiation:
+```python
+env = TrafficEnv(render_mode="ansi")
+print(env.render())
+```
+
+## Running a Random Agent
+
+To verify the environment is ready for RL training, run the included `test_agent.py` script. It instantiates the environment and runs one full episode using random actions:
+```bash
+python test_agent.py
+```
+
+This will print the intersection state, action taken, and reward at each step, followed by an episode summary when the episode ends via termination or truncation.
+
 ## Files Overview
-- `env.py`: The core `gymnasium`-compliant environment containing `TrafficEnv`, `reset()`, and `step()`.
+- `env.py`: The core `gymnasium`-compliant environment containing `TrafficEnv`, `reset()`, `step()`, and `render()`.
 - `app.py`: A Gradio web interface to interactively simulate and test the environment logic.
+- `test_agent.py`: A demonstration script that runs a random agent for one full episode.
 - `requirements.txt`: Python dependencies.
 
 ## How to Run Locally
