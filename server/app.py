@@ -101,6 +101,6 @@ with gr.Blocks(title="Smart City Traffic RL Environment") as demo:
 app = gr.mount_gradio_app(app, demo, path="/")
 
 # --- OpenEnv Server Entry Point ---
-def start_server():
+def main():
     import uvicorn
-    uvicorn.run("app:app", host="0.0.0.0", port=7860)
+    uvicorn.run("server.app:app", host="0.0.0.0", port=7860)
